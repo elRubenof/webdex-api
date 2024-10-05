@@ -21,7 +21,7 @@ app.get('/test', async (req, res) => {
   const cyclesUrl = 'https://landsat.usgs.gov/sites/default/files/landsat_acq/assets/json/cycles_full.json'
 
   try {
-    
+
     const [nimbusResponse, cyclesResponse] = await Promise.all([
       axios.get(nimbusUrl),
       axios.get(cyclesUrl)
@@ -71,6 +71,41 @@ app.get('/test', async (req, res) => {
       res.json(results)
     } else {
       res.status(404).json({ error: 'No se encontraron datos coincidentes' })
+    }
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({ error: 'Error al obtener datos externos' })
+  }
+})
+
+app.get('/today', async (req, res) => {
+  const cyclesUrl = 'https://landsat.usgs.gov/sites/default/files/landsat_acq/assets/json/cycles_full.json'
+
+  try {
+    const today = new Date()
+    const formattedDate = `${today.getMonth() + 1}/${today.getDate()}/${today.getFullYear()}`
+
+    const cyclesResponse = await axios.get(cyclesUrl)
+    const cyclesData = cyclesResponse.data
+
+    const results = {}
+
+    for (const [landsatKey, dates] of Object.entries(cyclesData)) {
+      const landsatNumber = landsatKey.replace('landsat_', '')
+
+      if (dates.hasOwnProperty(formattedDate)) {
+        const data = dates[formattedDate]
+        const paths = data.path.split(',').map(p => parseInt(p.trim(), 10))
+
+        const key = `Landsat ${landsatNumber}`
+        results[key] = paths
+      }
+    }
+
+    if (Object.keys(results).length > 0) {
+      res.json(results)
+    } else {
+      res.status(404).json({ error: 'No se encontraron paths para la fecha de hoy' })
     }
   } catch (error) {
     console.error(error)
