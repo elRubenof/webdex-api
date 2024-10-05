@@ -1,7 +1,11 @@
+const dotenv = require('dotenv')
 const express = require('express')
-const app = express()
+
+dotenv.config({ path: '.env.development.local' })
 
 const PORT = process.env.PORT ?? 8000
+const app = express()
+app.disable('x-powered-by')
 
 app.get('/', (req, res) => {
   res.send('GET')
@@ -19,3 +23,5 @@ app.use((req, res) => {
 app.listen(PORT, () => {
   console.log(`Server listening on http://localhost:${PORT}`)
 })
+
+module.exports = app
