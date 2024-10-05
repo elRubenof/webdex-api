@@ -9,74 +9,76 @@ const app = express()
 app.disable('x-powered-by')
 
 app.get('/path', async (req, res) => {
-  const lat = parseFloat(req.query.lat)
-  const lon = parseFloat(req.query.lon)
+
+  const lat = parseFloat(req.query.lat);
+  const lon = parseFloat(req.query.lon);
 
   if (isNaN(lat) || isNaN(lon)) {
-    return res.status(400).json({ error: 'Invalid params.' })
+    return res.status(400).json({ error: 'Invalid params.' });
   }
 
-  const nimbusUrl = `https://nimbus.cr.usgs.gov/arcgis/rest/services/LLook_Outlines/MapServer/1/query?where=MODE=%27D%27&geometry=${lon},%20${lat}&geometryType=esriGeometryPoint&spatialRel=esriSpatialRelIntersects&outFields=*&returnGeometry=false&f=json`
+  const nimbusUrl = `https://nimbus.cr.usgs.gov/arcgis/rest/services/LLook_Outlines/MapServer/1/query?where=MODE=%27D%27&geometry=${lon},%20${lat}&geometryType=esriGeometryPoint&spatialRel=esriSpatialRelIntersects&outFields=*&returnGeometry=false&f=json`;
 
-  const cyclesUrl = 'https://landsat.usgs.gov/sites/default/files/landsat_acq/assets/json/cycles_full.json'
+  const cyclesUrl = 'https://landsat.usgs.gov/sites/default/files/landsat_acq/assets/json/cycles_full.json';
 
   try {
-
     const [nimbusResponse, cyclesResponse] = await Promise.all([
       axios.get(nimbusUrl),
-      axios.get(cyclesUrl)
-    ])
+      axios.get(cyclesUrl),
+    ]);
 
-    const nimbusData = nimbusResponse.data
-    const cyclesData = cyclesResponse.data
+    const nimbusData = nimbusResponse.data;
+    const cyclesData = cyclesResponse.data;
 
     if (nimbusData.features && nimbusData.features.length > 0) {
-      const results = nimbusData.features.map(feature => {
-        const path = feature.attributes.PATH
-        const row = feature.attributes.ROW
-
-        const landsats = []
-
-        for (const [landsatKey, dates] of Object.entries(cyclesData)) {
-          const landsatNumber = landsatKey.replace('landsat_', '')
-
-          for (const [date, data] of Object.entries(dates)) {
-            const paths = data.path.split(',').map(p => parseInt(p.trim(), 10))
-
-            if (paths.includes(path)) {
-              let landsatEntry = landsats.find(l => l.landsat === parseInt(landsatNumber, 10))
-
-              if (!landsatEntry) {
-                landsatEntry = {
-                  landsat: parseInt(landsatNumber, 10),
-                  dates: []
-                }
-                landsats.push(landsatEntry)
-              }
-
-              if (!landsatEntry.dates.includes(date)) {
-                landsatEntry.dates.push(date)
-              }
-            }
-          }
-        }
+      const chunks = nimbusData.features.map(feature => {
+        const path = feature.attributes.PATH;
+        const row = feature.attributes.ROW;
 
         return {
           path: path,
           row: row,
-          landsats: landsats
-        }
-      })
+          ctr_lat: lat,
+          ctr_lon: lon
+        };
+      });
 
-      res.json(results)
+      const landsatDates = {
+        'Landsat 7': { dates: [] },
+        'Landsat 8': { dates: [] },
+        'Landsat 9': { dates: [] },
+      };
+
+      for (const [landsatKey, dates] of Object.entries(cyclesData)) {
+        const landsatNumber = landsatKey.replace('landsat_', '');
+
+        for (const [date, data] of Object.entries(dates)) {
+          const paths = data.path.split(',').map(p => parseInt(p.trim(), 10));
+
+          const isPathIncluded = nimbusData.features.some(feature => paths.includes(feature.attributes.PATH));
+          if (isPathIncluded) {
+            if (landsatNumber === '7') landsatDates['Landsat 7'].dates.push(date);
+            if (landsatNumber === '8') landsatDates['Landsat 8'].dates.push(date);
+            if (landsatNumber === '9') landsatDates['Landsat 9'].dates.push(date);
+          }
+        }
+      }
+
+      const result = {
+        chunks: chunks,
+        ...landsatDates
+      };
+
+      res.json(result);
     } else {
-      res.status(404).json({ error: 'No se encontraron datos coincidentes' })
+      res.status(404).json({ error: 'No se encontraron datos coincidentes' });
     }
   } catch (error) {
-    console.error(error)
-    res.status(500).json({ error: 'Error al obtener datos externos' })
+    console.error(error);
+    res.status(500).json({ error: 'Error al obtener datos externos' });
   }
-})
+});
+
 
 app.get('/today', async (req, res) => {
   const cyclesUrl = 'https://landsat.usgs.gov/sites/default/files/landsat_acq/assets/json/cycles_full.json'
