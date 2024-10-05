@@ -1,6 +1,8 @@
 const dotenv = require('dotenv');
 const express = require('express');
 const axios = require('axios');
+const cors = require('cors');
+
 const xlsx = require('xlsx');
 const path = require('path');
 
@@ -8,6 +10,7 @@ dotenv.config({ path: '.env.development.local' });
 
 const PORT = process.env.PORT ?? 8000;
 const app = express();
+app.use(cors());
 app.disable('x-powered-by');
 
 const coordsFilePath = path.join(__dirname, 'assets', 'coords.xlsx');
