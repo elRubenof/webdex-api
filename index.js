@@ -8,7 +8,7 @@ const PORT = process.env.PORT ?? 8000
 const app = express()
 app.disable('x-powered-by')
 
-app.get('/test', async (req, res) => {
+app.get('/path', async (req, res) => {
   const lat = parseFloat(req.query.lat)
   const lon = parseFloat(req.query.lon)
 
