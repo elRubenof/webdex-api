@@ -113,6 +113,8 @@ app.get('/path', async (req, res) => {
       }
 
       const result = {
+        latitude: lat,
+        longitude: lon,
         state: nominatim.address.state,
         chunks: chunks,
         ...landsatDates,
