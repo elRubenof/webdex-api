@@ -158,6 +158,52 @@ app.get('/today', async (req, res) => {
   }
 });
 
+const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+  app.get('/search', async (req, res) => {
+    try {
+
+    const serviceUrl = 'https://m2m.cr.usgs.gov/api/api/json/stable/';
+
+    const path = parseFloat(req.query.path);
+    const row = parseFloat(req.query.row);
+
+    const sceneSearchUrl = `${serviceUrl}scene-search`;
+    const sceneSearchPayload = {
+      datasetName: 'landsat_ot_c2_l2',
+      sceneFilter: {
+            filterType: 'and',
+            childFilters: [
+                {
+                    filterType: 'value',
+                    filterId: '5e83d15051254e26',
+                    value: ' ' + path,
+                    operand: '='
+                },
+                {
+                    filterType: 'value',
+                    filterId: '5e83d15038163a68',
+                    value: ' ' + row,
+                    operand: '='
+                }
+            ]
+        }
+    };
+
+    const sceneSearchResponse = await axios.post(sceneSearchUrl, sceneSearchPayload, {
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Auth-Token': 'eyJjaWQiOjI3Mjk3MTkyLCJzIjoiMTcyODIwMTQ1OSIsInIiOjM0OSwicCI6WyJ1c2VyIl19'
+      }
+    });
+
+    res.json(sceneSearchResponse.data);
+  } catch (error) {
+    console.error('Error al realizar la búsqueda de escenas:', error.response ? error.response.data : error.message);
+    res.status(500).json({ error: 'Error al realizar la búsqueda de escenas' });
+  }
+});
+
 app.post('/', (req, res) => {
   res.send('POST');
 });
