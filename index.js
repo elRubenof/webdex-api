@@ -197,10 +197,21 @@ const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
       }
     });
 
-    res.json(sceneSearchResponse.data);
+    const scenes = sceneSearchResponse.data.data;
+
+    if (!scenes || scenes.length === 0) {
+      return res.json(null);
+    }
+
+    res.json(scenes);
   } catch (error) {
     console.error('Error al realizar la búsqueda de escenas:', error.response ? error.response.data : error.message);
-    res.status(500).json({ error: 'Error al realizar la búsqueda de escenas' });
+
+    if (error.response && error.response.data && error.response.data.errorCode === 'AUTH_EXPIRED') {
+      return res.json(null);
+    }
+
+    res.status(500).json({ error: 'Error al realizar la búsqueda de escenas.' });
   }
 });
 
