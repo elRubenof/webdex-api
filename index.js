@@ -193,7 +193,7 @@ const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
     const sceneSearchResponse = await axios.post(sceneSearchUrl, sceneSearchPayload, {
       headers: {
         'Content-Type': 'application/json',
-        'X-Auth-Token': 'eyJjaWQiOjI3Mjk3MTkyLCJzIjoiMTcyODIwMTQ1OSIsInIiOjM0OSwicCI6WyJ1c2VyIl19'
+        'X-Auth-Token': 'eyJjaWQiOjI3Mjk3MTkyLCJzIjoiMTcyODI1MDMxMCIsInIiOjkzMCwicCI6WyJ1c2VyIl19'
       }
     });
 
