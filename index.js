@@ -92,7 +92,6 @@ app.get('/path', async (req, res) => {
       });
 
       const landsatDates = {
-        'Landsat 7': [],
         'Landsat 8': [],
         'Landsat 9': [],
       };
@@ -105,7 +104,6 @@ app.get('/path', async (req, res) => {
 
           const isPathIncluded = nimbusData.features.some(feature => paths.includes(feature.attributes.PATH));
           if (isPathIncluded) {
-            if (landsatNumber === '7') landsatDates['Landsat 7'].push(date);
             if (landsatNumber === '8') landsatDates['Landsat 8'].push(date);
             if (landsatNumber === '9') landsatDates['Landsat 9'].push(date);
           }
