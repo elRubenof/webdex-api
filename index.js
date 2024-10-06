@@ -54,18 +54,18 @@ app.get('/path', async (req, res) => {
 
   const cyclesUrl = 'https://landsat.usgs.gov/sites/default/files/landsat_acq/assets/json/cycles_full.json';
 
-  const nominatimUrl = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=10&addressdetails=1`;
+  //const nominatimUrl = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=10&addressdetails=1`;
 
   try {
     const [nimbusResponse, cyclesResponse, nominatimResponse] = await Promise.all([
       axios.get(nimbusUrl),
       axios.get(cyclesUrl),
-      axios.get(nominatimUrl),
+      //axios.get(nominatimUrl),
     ]);
 
     const nimbusData = nimbusResponse.data;
     const cyclesData = cyclesResponse.data;
-    const nominatim = nominatimResponse.data;
+    //const nominatim = nominatimResponse.data;
 
     if (nimbusData.features && nimbusData.features.length > 0) {
       const chunks = nimbusData.features.map(feature => {
@@ -115,7 +115,7 @@ app.get('/path', async (req, res) => {
       const result = {
         latitude: lat,
         longitude: lon,
-        state: nominatim.address.state,
+        //state: nominatim.address.state,
         chunks: chunks,
         ...landsatDates,
       };
