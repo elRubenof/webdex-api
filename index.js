@@ -92,9 +92,9 @@ app.get('/path', async (req, res) => {
       });
 
       const landsatDates = {
-        'Landsat 7': { dates: [] },
-        'Landsat 8': { dates: [] },
-        'Landsat 9': { dates: [] },
+        'Landsat 7': [],
+        'Landsat 8': [],
+        'Landsat 9': [],
       };
 
       for (const [landsatKey, dates] of Object.entries(cyclesData)) {
@@ -105,9 +105,9 @@ app.get('/path', async (req, res) => {
 
           const isPathIncluded = nimbusData.features.some(feature => paths.includes(feature.attributes.PATH));
           if (isPathIncluded) {
-            if (landsatNumber === '7') landsatDates['Landsat 7'].dates.push(date);
-            if (landsatNumber === '8') landsatDates['Landsat 8'].dates.push(date);
-            if (landsatNumber === '9') landsatDates['Landsat 9'].dates.push(date);
+            if (landsatNumber === '7') landsatDates['Landsat 7'].push(date);
+            if (landsatNumber === '8') landsatDates['Landsat 8'].push(date);
+            if (landsatNumber === '9') landsatDates['Landsat 9'].push(date);
           }
         }
       }
@@ -117,7 +117,7 @@ app.get('/path', async (req, res) => {
         longitude: lon,
         //state: nominatim.address.state,
         chunks: chunks,
-        ...landsatDates,
+        dates: landsatDates,
       };
 
       res.json(result);
